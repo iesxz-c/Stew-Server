@@ -51,7 +51,7 @@ def create_app(config_name=None):
     from .goals.routes import goalsbp
     app.register_blueprint(goalsbp)
 
-    from .flashcards import flashcards_bp
+    from .flashcards.routes import flashcards_bp
     app.register_blueprint(flashcards_bp)
 
     # Create database if it doesn't exist

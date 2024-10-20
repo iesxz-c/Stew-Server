@@ -1,4 +1,5 @@
 from .. import db
+from datetime import datetime
 
 class Flashcard(db.Model):
     id = db.Column(db.Integer, primary_key=True)
