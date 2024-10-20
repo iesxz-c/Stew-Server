@@ -7,7 +7,9 @@ class User(db.Model):
     password = db.Column(db.String(150), nullable=False)
 
     # Relationship to access groups the user belongs to
-    groups = db.relationship('Group', secondary='group_members', backref='user_groups')
+    groups = db.relationship('Group', secondary='group_members', backref=db.backref('members', lazy='dynamic'))
     goals = db.relationship('Goal', backref='user', lazy=True)
     notifications = db.relationship('Notification', backref='user', lazy=True)
     progress = db.relationship('UserProgress', backref='user', uselist=False)
+    flashcards = db.relationship('Flashcard', backref='user', lazy=True)  # Add this line
+
