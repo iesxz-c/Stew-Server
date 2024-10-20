@@ -59,7 +59,6 @@ def create_app(config_name=None):
         create_database(app)
         with app.app_context():  # Ensure the app context is active
             drop_temporary_table()
-            drop_flashcard_table()
 
     return app
 
@@ -113,16 +112,3 @@ def create_database(app):
             print('Database created!')
 
 
-def drop_flashcard_table():
-    # Create a connection to the database
-    with db.engine.connect() as connection:
-        # Check if the table exists
-        result = connection.execute(text("SELECT name FROM sqlite_master WHERE type='table' AND name='flashcard';"))
-        table_exists = result.fetchone()
-
-        if table_exists:
-            # If it exists, drop the table
-            connection.execute(text("DROP TABLE flashcard;"))
-            print("Dropped the flashcard table.")
-        else:
-            print("The flashcard table does not exist.")
