@@ -52,14 +52,14 @@ def create_app(config_name=None):
     from .goals.routes import goalsbp
     app.register_blueprint(goalsbp)
 
-    from .flashcards.routes import flashcards_bp
-    app.register_blueprint(flashcards_bp)
+    
 
     # Create database if it doesn't exist
     if config_name != 'testing':
         create_database(app)
         with app.app_context():  # Ensure the app context is active
             drop_temporary_table()
+            drop_flashcard_table()
 
     return app
 
@@ -111,3 +111,18 @@ def create_database(app):
         with app.app_context():
             db.create_all()
             print('Database created!')
+
+
+def drop_flashcard_table():
+    # Create a connection to the database
+    with db.engine.connect() as connection:
+        # Check if the table exists
+        result = connection.execute(text("SELECT name FROM sqlite_master WHERE type='table' AND name='flashcard';"))
+        table_exists = result.fetchone()
+
+        if table_exists:
+            # If it exists, drop the table
+            connection.execute(text("DROP TABLE flashcard;"))
+            print("Dropped the flashcard table.")
+        else:
+            print("The flashcard table does not exist.")
