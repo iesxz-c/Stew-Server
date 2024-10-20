@@ -55,7 +55,10 @@ def create_goal():
 @jwt_required()
 def complete_goal(goal_id):
     user_id = get_jwt_identity()
+    print("User ID from token:", user_id) 
     goal = Goal.query.get_or_404(goal_id)
+    print("User ID from token:", goal.user_id) 
+
 
     if goal.user_id != user_id:
         return jsonify({"message": "Unauthorized"}), 403
