@@ -9,6 +9,7 @@ from flask_jwt_extended import JWTManager
 from datetime import timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime
+from sqlalchemy import text
 
 # Initialize extensions
 db = SQLAlchemy()
@@ -57,8 +58,24 @@ def create_app(config_name=None):
     # Create database if it doesn't exist
     if config_name != 'testing':
         create_database(app)
+        with app.app_context():  # Ensure the app context is active
+            drop_temporary_table()
 
     return app
+
+def drop_temporary_table():
+    # Create a connection to the database
+    with db.engine.connect() as connection:
+        # Check if the table exists
+        result = connection.execute(text("SELECT name FROM sqlite_master WHERE type='table' AND name='_alembic_tmp_flashcard';"))
+        table_exists = result.fetchone()
+
+        if table_exists:
+            # If it exists, drop the table
+            connection.execute(text("DROP TABLE _alembic_tmp_flashcard;"))
+            print("Dropped the _alembic_tmp_flashcard table.")
+        else:
+            print("The _alembic_tmp_flashcard table does not exist.")
 
 def notify_upcoming_deadlines():
     from .goals.models import Goal  # Import Goal model here to avoid circular import issues
