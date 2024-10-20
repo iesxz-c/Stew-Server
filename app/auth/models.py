@@ -11,5 +11,4 @@ class User(db.Model):
     goals = db.relationship('Goal', backref='user', lazy=True)
     notifications = db.relationship('Notification', backref='user', lazy=True)
     progress = db.relationship('UserProgress', backref='user', uselist=False)
-    flashcards = db.relationship('Flashcard', backref='user', lazy=True)  # Add this line
 
