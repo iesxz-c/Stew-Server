@@ -3,7 +3,6 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from .models import Goal, Notification, UserProgress
 from .. import db, skt
 from datetime import datetime, timedelta
-from .models import FrequencyEnum  # Adjust according to your project structure
 
 goalsbp = Blueprint('goals', __name__)
 
@@ -25,7 +24,7 @@ def create_goal():
         return jsonify({"message": "Invalid deadline format"}), 400
 
     # Ensure the frequency is valid
-    if frequency not in [f.value for f in FrequencyEnum]:
+    if frequency not in ['Daily', 'Weekly', 'Monthly']:
         return jsonify({"message": "Invalid frequency"}), 400
 
     goal = Goal(
