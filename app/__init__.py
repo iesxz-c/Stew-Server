@@ -51,6 +51,8 @@ def create_app(config_name=None):
     # Import models here to avoid circular imports
     from .goals.routes import goalsbp
     app.register_blueprint(goalsbp)
+    from .flashcards.routes import flashcards_bp
+    app.register_blueprint(flashcards_bp)
 
     
 
