@@ -12,11 +12,12 @@
     <button id="sendMessage">Send</button>
     
     <script>
-        const socket = io.connect('http://localhost:5000'); // Adjust port if needed
+        const socket = io.connect('http://localhost:5000'); 
+        /// wait i have made an mistake in the ids of GOALS so be carefull
         
-        // Example: Join a group on load
-        const group_id = 1; // Replace with actual group ID
-        const user_id = 1; // Replace with actual user ID
+        
+        const group_id = 1;
+        const user_id = 1;
         
         socket.emit('join_group', { group_id, user_id });
 
@@ -33,7 +34,7 @@
             const messageInput = document.getElementById('messageInput');
             const content = messageInput.value;
             socket.emit('send_message', { content, group_id, user_id });
-            messageInput.value = ''; // Clear input
+            messageInput.value = ''; 
         });
     </script>
 </body>
