@@ -53,8 +53,8 @@ def create_app(config_name=None):
     app.register_blueprint(goalsbp)
     from .flashcards.routes import flashcards_bp
     app.register_blueprint(flashcards_bp)
-
-    
+    from .quizzes.routes import quizzesbp
+    app.register_blueprint(quizzesbp)
 
     # Create database if it doesn't exist
     if config_name != 'testing':
