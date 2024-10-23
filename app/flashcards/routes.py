@@ -2,8 +2,13 @@ from flask import Flask,request,jsonify,Blueprint
 from flask_jwt_extended import jwt_required,get_jwt_identity
 from .models import Flashcard
 from .. import db,UPLOAD_FOLDER, allowed_file
+from PIL import Image, ImageDraw, ImageFont
+import io
+from flask import send_file
 import csv
 from flask import Response
+from PyPDF2 import PdfReader
+
 
 
 flashcards_bp = Blueprint("flashcard",__name__)
@@ -39,18 +44,45 @@ def get_flashcard(flashcard_id):
     })
 
 
+
+
 @flashcards_bp.route('/flashcards/export', methods=['GET'])
 @jwt_required()
 def export_flashcards():
     user_id = get_jwt_identity()
     flashcards = Flashcard.query.filter_by(user_id=user_id).all()
-    
-    def generate():
-        yield "Question,Answer\n"
-        for flashcard in flashcards:
-            yield f"{flashcard.question},{flashcard.answer}\n"
 
-    return Response(generate(), mimetype='text/csv', headers={"Content-Disposition": "attachment;filename=flashcards.csv"})
+    # Create an image for the flashcards
+    width, height = 800, 1200
+    image = Image.new('RGB', (width, height), color='white')
+    draw = ImageDraw.Draw(image)
+
+    # Define the font and starting position for the text
+    font = ImageFont.load_default()  # You can use a custom font here
+    padding = 20
+    x, y = padding, padding
+    line_height = 30
+
+    # Add title
+    draw.text((x, y), "Flashcards", font=font, fill="black")
+    y += line_height + padding
+
+    # Loop through flashcards and draw them on the image
+    for flashcard in flashcards:
+        text = f"Q: {flashcard.question}\nA: {flashcard.answer}\n"
+        draw.text((x, y), text, font=font, fill="black")
+        y += line_height * 3  # Space between flashcards
+        if y + line_height * 3 > height - padding:
+            break  # Stops if the content exceeds the image height
+
+    # Save the image to a BytesIO stream to send as a response
+    img_io = io.BytesIO()
+    image.save(img_io, 'JPEG')
+    img_io.seek(0)
+
+    # Return the image as a response
+    return send_file(img_io, mimetype='image/jpeg', as_attachment=True, download_name='flashcards.jpg')
+
 
 @flashcards_bp.route('/flashcards/import', methods=['POST'])
 @jwt_required()
@@ -61,24 +93,52 @@ def import_flashcards():
     if not file or not allowed_file(file.filename):
         return jsonify({'message': 'Invalid file format'}), 400
 
-    content = file.read().decode('utf-8').splitlines()
+    filename = file.filename.rsplit('.', 1)[1].lower()
+
     flashcards_to_add = []
-
-    for line in content[1:]:
-        parts = line.split(',')
-        if len(parts) != 2:
-            continue 
-        question, answer = parts
-        flashcards_to_add.append(Flashcard(user_id=user_id, question=question, answer=answer))
-
+    
     try:
+        # Handle CSV
+        if filename == 'csv':
+            content = file.read().decode('utf-8').splitlines()
+            reader = csv.reader(content)
+            next(reader)  # Skip the header
+            for row in reader:
+                if len(row) == 2:
+                    question, answer = row
+                    flashcards_to_add.append(Flashcard(user_id=user_id, question=question, answer=answer))
+        
+        # Handle TXT
+        elif filename == 'txt':
+            content = file.read().decode('utf-8')
+            lines = content.split('\n')
+            for line in lines:
+                if ',' in line:  # Expecting comma separated question and answer
+                    question, answer = line.split(',', 1)
+                    flashcards_to_add.append(Flashcard(user_id=user_id, question=question.strip(), answer=answer.strip()))
+        
+        # Handle PDF
+        elif filename == 'pdf':
+            reader = PdfReader(file)
+            text = ''
+            for page in reader.pages:
+                text += page.extract_text()  # Extract text from all pages
+
+            # Assuming the text has "question,answer" format on each line
+            lines = text.split('\n')
+            for line in lines:
+                if ',' in line:
+                    question, answer = line.split(',', 1)
+                    flashcards_to_add.append(Flashcard(user_id=user_id, question=question.strip(), answer=answer.strip()))
+        
+        # Save flashcards to database
         db.session.bulk_save_objects(flashcards_to_add)
         db.session.commit()
+        return jsonify({'message': 'Flashcards imported successfully'}), 201
+
     except Exception as e:
         db.session.rollback()
-        return jsonify({'message': 'Database error occurred: ' + str(e)}), 500
-
-    return jsonify({'message': 'Flashcards imported successfully'}), 201
+        return jsonify({'message': f'Failed to import flashcards: {str(e)}'}), 500
 
 
 

@@ -20,7 +20,7 @@ scheduler = BackgroundScheduler()
 
 DB_NAME = 'app.db'
 UPLOAD_FOLDER = 'uploads'
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif','csv'}
 
 def create_app(config_name=None):
     app = Flask(__name__)
