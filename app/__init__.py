@@ -5,7 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_migrate import Migrate
 from os import path
-from flask_jwt_extended import JWTManager
+from flask_jwt_extended import JWTManager,get_jwt_header
 from datetime import timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime
@@ -22,6 +22,7 @@ DB_NAME = 'app.db'
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif','csv'}
 
+
 def create_app(config_name=None):
     app = Flask(__name__)
 
@@ -31,7 +32,8 @@ def create_app(config_name=None):
     else:
         app.config.from_object(Config)
     app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=31)  # Token expiry
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=31)
+       # Token expiry
 
     # Initialize extensions
     db.init_app(app)
@@ -114,6 +116,8 @@ def create_database(app):
         with app.app_context():
             db.create_all()
             print('Database created!')
+
+
 
 
 
