@@ -53,14 +53,14 @@ def create_app(config_name=None):
     app.register_blueprint(goalsbp)
     from .flashcards.routes import flashcards_bp
     app.register_blueprint(flashcards_bp)
-    from .quizzes.routes import quizzesbp
-    app.register_blueprint(quizzesbp)
+    
 
     # Create database if it doesn't exist
     if config_name != 'testing':
         create_database(app)
         with app.app_context():  # Ensure the app context is active
             drop_temporary_table()
+            
 
     return app
 
@@ -77,6 +77,8 @@ def drop_temporary_table():
             print("Dropped the _alembic_tmp_flashcard table.")
         else:
             print("The _alembic_tmp_flashcard table does not exist.")
+
+
 
 def notify_upcoming_deadlines():
     from .goals.models import Goal  # Import Goal model here to avoid circular import issues
@@ -112,5 +114,7 @@ def create_database(app):
         with app.app_context():
             db.create_all()
             print('Database created!')
+
+
 
 
