@@ -5,7 +5,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 import os
 from werkzeug.utils import secure_filename
-
+import logging
 
 authbp = Blueprint('auth', __name__)
 
@@ -102,14 +102,17 @@ def edit_profile():
         if user.profile_picture:
             old_picture_path = os.path.join(current_app.config['UPLOAD_FOLDER'], user.profile_picture)
             if os.path.isfile(old_picture_path):  # Check if the file exists
-                os.remove(old_picture_path)  # Delete the old profile picture file
+                try:
+                    os.remove(old_picture_path)  # Delete the old profile picture file
+                except OSError as e:
+                    logging.error(f"Error deleting file: {e}")
 
         # Save the new profile picture
         filename = secure_filename(file.filename)  # Sanitize the filename
         file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
         file.save(file_path)
         
-        # Update user's profile picture path (store just the filename or full path as needed)
+        # Update user's profile picture path
         user.profile_picture = filename  # Save just the filename for the database
 
     # Update user's other fields if provided
@@ -125,7 +128,16 @@ def edit_profile():
 
     try:
         db.session.commit()  # Commit changes to the database
-        return jsonify({"message": "Profile updated successfully!"}), 200
+        return jsonify({
+            "message": "Profile updated successfully!",
+            "user": {
+                "username": user.username,
+                "email": user.email,
+                "name": user.name,
+                "profile_picture": user.profile_picture
+            }
+        }), 200
     except Exception as e:
         db.session.rollback()
+        logging.error(f"Error updating profile: {e}")
         return jsonify({"message": "An error occurred while updating the profile"}), 500
