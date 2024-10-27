@@ -6,7 +6,7 @@ from datetime import datetime
 
 timetable_bp = Blueprint('timetable', __name__)
 
-@timetable_bp.route('/create', methods=['POST'])
+@timetable_bp.route('/timetable/create', methods=['POST'])
 @jwt_required()
 def create_timetable():
     user_id = get_jwt_identity()
@@ -30,7 +30,7 @@ def create_timetable():
         return jsonify({"message": "Failed to create entry"}), 500
 
 
-@timetable_bp.route('/edit/<int:id>', methods=['PUT'])
+@timetable_bp.route('/timetable/edit/<int:id>', methods=['PUT'])
 @jwt_required()
 def edit_timetable(id):
     user_id = get_jwt_identity()
@@ -54,7 +54,7 @@ def edit_timetable(id):
         return jsonify({"message": "Failed to update entry"}), 500
 
 
-@timetable_bp.route('/delete/<int:id>', methods=['DELETE'])
+@timetable_bp.route('/timetable/delete/<int:id>', methods=['DELETE'])
 @jwt_required()
 def delete_timetable(id):
     user_id = get_jwt_identity()
@@ -72,7 +72,7 @@ def delete_timetable(id):
         return jsonify({"message": "Failed to delete entry"}), 500
 
 
-@timetable_bp.route('/list', methods=['GET'])
+@timetable_bp.route('/timetable/list', methods=['GET'])
 @jwt_required()
 def list_timetables():
     user_id = get_jwt_identity()
