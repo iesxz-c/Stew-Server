@@ -89,3 +89,4 @@ def list_timetables():
         for entry in entries
     ]
     return jsonify(data), 200
+
