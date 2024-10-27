@@ -37,12 +37,12 @@ def create_app(config_name=None):
 
     # Initialize extensions
     db.init_app(app)
-    skt.init_app(app, cors_allowed_origins=["http://localhost:8000"])
+    skt.init_app(app, cors_allowed_origins=["http://localhost:8000","http://localhost:5173"])
     migrate.init_app(app, db)
     jwt.init_app(app)
 
     # Enable CORS
-    CORS(app, origins=["http://localhost:8000", "http://localhost:3000"])  # Add other origins as needed
+    CORS(app, origins=["http://localhost:8000", "http://localhost:3000","http://localhost:5173"])  # Add other origins as needed
 
     # Register blueprints
     from .auth.routes import authbp
