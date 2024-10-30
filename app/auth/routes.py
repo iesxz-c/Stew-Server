@@ -6,8 +6,14 @@ from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identi
 import os
 from werkzeug.utils import secure_filename
 import logging
-
+from flask import send_from_directory
 authbp = Blueprint('auth', __name__)
+
+
+@authbp.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(UPLOAD_FOLDER, filename)
+
 
 @authbp.route('/register', methods=['POST'])
 def register():
@@ -141,3 +147,25 @@ def edit_profile():
         db.session.rollback()
         logging.error(f"Error updating profile: {e}")
         return jsonify({"message": "An error occurred while updating the profile"}), 500
+
+
+@authbp.route('/profile_picture', methods=['GET'])
+@jwt_required()
+def get_profile_picture():
+    user_id = get_jwt_identity()  # Get the user ID from the token
+    user = User.query.get(user_id)  # Fetch the current user
+
+    if not user or not user.profile_picture:
+        print("Profile picture not found for user:", user_id)
+        return jsonify({"message": "Profile picture not found"}), 404
+
+    file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], user.profile_picture)
+    
+    # Check if the file exists before serving it
+    if not os.path.isfile(file_path):
+        print("File does not exist:", file_path)
+        return jsonify({"message": "Profile picture not found"}), 404
+
+    print("Serving profile picture from:", file_path)
+    return send_from_directory(current_app.config['UPLOAD_FOLDER'], user.profile_picture)
+
