@@ -172,3 +172,8 @@ def get_profile_picture():
     print("Serving profile picture from:", file_path)
     return send_from_directory(current_app.config['UPLOAD_FOLDER'], user.profile_picture)
 
+@authbp.route('/get_user_id', methods=['GET'])
+@jwt_required()
+def get_user_id():
+    user_id = get_jwt_identity()  # Get the user ID from the JWT token
+    return jsonify({"user_id": user_id}), 200

@@ -4,7 +4,6 @@ class Group(db.Model):
     __tablename__ = 'group'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
-
     # Relationship to access members of the group
     members = db.relationship('User', secondary='group_members', backref='user_groups')
 

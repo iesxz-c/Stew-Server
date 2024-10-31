@@ -1,6 +1,6 @@
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify, current_app, abort
 from .. import db, UPLOAD_FOLDER, allowed_file, skt
-from .models import Group, Message, GroupMembers, File
+from .models import Group, Message, File,GroupMembers
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from ..auth.models import User
 from werkzeug.utils import secure_filename
@@ -43,17 +43,22 @@ def join_group():
     groupname = data.get('name')
     user_id = get_jwt_identity()
     user = User.query.get_or_404(user_id)
-    group = Group.query.filter_by(name=groupname).first()
 
-    if group:
-        if user not in group.members:
-            group.members.append(user)
-            db.session.commit()
-            return jsonify({"message": "User joined group", "group_id": group.id, "user_id": user.id}), 200
+    try:
+        group = Group.query.filter_by(name=groupname).first()
+
+        if group:
+            if user not in group.members:
+                group.members.append(user)
+                db.session.commit()
+                return jsonify({"message": "User joined group", "group_id": group.id, "user_id": user.id}), 200
+            else:
+                return jsonify({"message": "User already in group"}), 400
         else:
-            return jsonify({"message": "User already in group"}), 400
-    else:
-        return jsonify({"message": "Group does not exist"}), 400
+            return jsonify({"message": "Group does not exist"}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "Error joining group", "error": str(e)}), 500
 
 @groupsbp.route('/groups/<int:group_id>/members', methods=['POST'])
 @jwt_required()
@@ -107,7 +112,6 @@ def get_messages(group_id):
 
     messages_query = Message.query.filter_by(group_id=group_id).order_by(Message.timestamp.asc())
     messages = messages_query.paginate(page=page, per_page=per_page, error_out=False)
-    
 
     return jsonify({
         'messages': [{
@@ -161,16 +165,23 @@ def upload_file(group_id):
 
 @skt.on('send_message')
 def handle_send_message(data):
-    message = Message(content=data['content'], group_id=data['group_id'], user_id=data['user_id'])
-    db.session.add(message)
+    user_id = data.get('user_id')  # Use .get() to avoid KeyError
+    content = data.get('content')
+    group_id = data.get('group_id')
+
+    # Check if user_id is None
+    if user_id is None:
+        print("Received user_id is None")
+        return  # or handle the error as needed
+
+    # Insert the message into the database
+    new_message = Message(content=content, group_id=group_id, user_id=user_id)
+    db.session.add(new_message)
     db.session.commit()
-    timestamp_str = message.timestamp.strftime('%Y-%m-%d %H:%M:%S')
-    
-    skt.emit('receive_message', {
-        'content': message.content,
-        'username': message.user.username,
-        'timestamp': timestamp_str
-    }, room=data['group_id'])
+
+    # Optionally emit back the message to the group
+    skt.emit('receive_message', {'content': content, 'user_id': user_id}, room=group_id)
+ 
 
 @skt.on('join_group')
 def on_join(data):
@@ -206,3 +217,27 @@ def leave_group(group_id):
         return jsonify({"message": "User left the group"}), 200
     else:
         return jsonify({"message": "User is not in this group"}), 400
+
+
+@groupsbp.route('/groups/<int:group_id>', methods=['DELETE'])
+@jwt_required()
+def delete_group(group_id):
+    group = Group.query.get_or_404(group_id)
+
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get_or_404(user_id)
+
+        # Check if the user is a member or the owner of the group if necessary
+        # for example, remove this if you don’t need that check
+
+        # Manually delete associated group members
+        GroupMembers.query.filter_by(group_id=group_id).delete()
+
+        db.session.delete(group)
+        db.session.commit()
+        
+        return jsonify({"message": "Group deleted successfully"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "Error deleting group", "error": str(e)}), 500
