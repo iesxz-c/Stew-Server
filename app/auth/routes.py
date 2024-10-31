@@ -97,10 +97,13 @@ def edit_profile():
 
     if not user:
         return jsonify({"message": "User not found"}), 404
+    
 
-    data = request.form  # Use request.form for form data
+    data = request.form 
+    logging.info(f"Incoming data: {data}") # Use request.form for form data
     # Handle file upload
     file = request.files.get('profile_picture')
+    logging.info(f"Received file: {file}")
 
     # Check if a profile picture file is included in the request
     if file and allowed_file(file.filename):  # Ensure the file type is allowed
