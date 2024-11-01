@@ -1,31 +1,34 @@
-from flask import Blueprint, request, jsonify, current_app, abort
-from .. import db, UPLOAD_FOLDER, allowed_file, skt
-from .models import Group, Message
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required, get_jwt_identity, decode_token
+from .. import db, skt
 from ..auth.models import User
-from werkzeug.utils import secure_filename
-import os
-from flask_socketio import join_room, emit
-from flask_socketio import  join_room, leave_room, send
+from .models import Group, Message
+from flask_socketio import join_room, leave_room, send
+from flask_jwt_extended.exceptions import NoAuthorizationError,InvalidHeaderError
+
 groupsbp = Blueprint('groups', __name__)
 
 @groupsbp.route('/create_group', methods=['POST'])
 @jwt_required()
 def create_group():
-    data = request.get_json()  # Get the JSON data from the request
-    group_name = data.get('group_name')  # Access group_name from the JSON data
+    data = request.get_json()
+    group_name = data.get('group_name')
+    owner_id = get_jwt_identity()
 
     if not group_name:
         return jsonify({"error": "Group name is required"}), 400
 
-    # Check if group already exists
     existing_group = Group.query.filter_by(name=group_name).first()
     if existing_group:
         return jsonify({"error": "Group name already exists"}), 409
 
-    group = Group(name=group_name)
+    group = Group(name=group_name, owner_id=owner_id)
     db.session.add(group)
     db.session.commit()
+
+    group.members.append(User.query.get(owner_id))
+    db.session.commit()
+
     return jsonify({"message": "Group created", "group_id": group.id}), 201
 
 @groupsbp.route('/join_group/<int:group_id>', methods=['POST'])
@@ -49,49 +52,69 @@ def join_group(group_id):
 @jwt_required()
 def delete_group(group_id):
     group = Group.query.get(group_id)
+    user_id = get_jwt_identity()
 
     if not group:
         return jsonify({"error": "Group not found"}), 404
+
+    if group.owner_id != user_id:
+        return jsonify({"error": "Only the owner can delete this group"}), 403
 
     db.session.delete(group)
     db.session.commit()
     return jsonify({"message": "Group deleted"}), 200
 
+@groupsbp.route('/all_groups', methods=['GET'])
+@jwt_required()
+def all_groups():
+    groups = Group.query.all()
+    return jsonify([{'group_id': group.id, 'name': group.name, 'owner_id': group.owner_id} for group in groups])
+
+def verify_token(data):
+    token = data.get('token')
+    if not token:
+        raise NoAuthorizationError("Missing Authorization Token")
+
+    try:
+        jwt_data = decode_token(token)
+        return jwt_data['sub']  # Assuming 'sub' is the user ID
+    except InvalidHeaderError:
+        raise NoAuthorizationError("Invalid or expired token")
+
 @skt.on('join')
 def on_join(data):
-    username = data['username']
-    group_id = data['group_id']
-    join_room(group_id)
-    send(f"{username} has entered the room.", to=group_id)
+    try:
+        user_id = verify_token(data['auth'])
+        username = data['username']
+        group_id = data['group_id']
+
+        join_room(group_id)
+        send(f"{username} has entered the room.", to=group_id)
+    except NoAuthorizationError as e:
+        send(str(e), to=request.sid)
 
 @skt.on('message')
-@jwt_required()
 def handle_message(data):
-    content = data['content']
-    group_id = data['group_id']
-    user_id = get_jwt_identity()  # Retrieve the current user's ID
-    message = Message(content=content, user_id=user_id, group_id=group_id)
-    db.session.add(message)
-    db.session.commit()
-    send(content, to=group_id)
+    try:
+        user_id = verify_token(data['auth'])
+        content = data['content']
+        group_id = data['group_id']
+
+        message = Message(content=content, user_id=user_id, group_id=group_id)
+        db.session.add(message)
+        db.session.commit()
+        send(content, to=group_id)
+    except NoAuthorizationError as e:
+        send(str(e), to=request.sid)
 
 @skt.on('leave')
 def on_leave(data):
-    username = data['username']
-    group_id = data['group_id']
-    leave_room(group_id)
-    send(f"{username} has left the room.", to=group_id)
+    try:
+        user_id = verify_token(data['auth'])
+        username = data['username']
+        group_id = data['group_id']
 
-@groupsbp.route('/messages/<int:group_id>')
-@jwt_required()
-def get_messages(group_id):
-    messages = Message.query.filter_by(group_id=group_id).order_by(Message.timestamp).all()
-    return jsonify([{'user': msg.user_id, 'content': msg.content, 'timestamp': msg.timestamp} for msg in messages])
-
-@groupsbp.route('/my_groups')
-@jwt_required()
-def my_groups():
-    current_user = User.query.get(get_jwt_identity())  # Get the current user from JWT
-    groups = current_user.groups
-    print(f"Groups for user {current_user.id}: {[group.id for group in groups]}")  # Debugging line
-    return jsonify([{'group_id': group.id, 'name': group.name} for group in groups])
+        leave_room(group_id)
+        send(f"{username} has left the room.", to=group_id)
+    except NoAuthorizationError as e:
+        send(str(e), to=request.sid)

@@ -66,7 +66,7 @@ def create_app(config_name=None):
         create_database(app)
         with app.app_context():
             drop_temporary_table()
-            #dt()
+           
 
     # Route for serving uploaded files
     @app.route('/uploads/<filename>')
@@ -135,5 +135,6 @@ def create_database(app):
         with app.app_context():
             db.create_all()
             print('Database created!')
+
 
 
