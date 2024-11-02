@@ -89,7 +89,7 @@ def on_join(data):
         group_id = data['group_id']
 
         join_room(group_id)
-        send(f"{username} has entered the room.", to=group_id)
+        send({"type":"notification","content":f"{username} is in the Chat"}, to=group_id)
     except NoAuthorizationError as e:
         send(str(e), to=request.sid)
 
@@ -99,11 +99,11 @@ def handle_message(data):
         user_id = verify_token(data['auth'])
         content = data['content']
         group_id = data['group_id']
-
+        user = User.query.get(user_id)
         message = Message(content=content, user_id=user_id, group_id=group_id)
         db.session.add(message)
         db.session.commit()
-        send(content, to=group_id)
+        send({'sender':user.username,'content':content}, to=group_id)
     except NoAuthorizationError as e:
         send(str(e), to=request.sid)
 
@@ -115,6 +115,6 @@ def on_leave(data):
         group_id = data['group_id']
 
         leave_room(group_id)
-        send(f"{username} has left the room.", to=group_id)
+        send({"type":"notification","content": f"{username} went offline."}, to=group_id)
     except NoAuthorizationError as e:
         send(str(e), to=request.sid)
