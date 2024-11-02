@@ -51,13 +51,13 @@ def create_app(config_name=None):
     # Register blueprints
     from .auth.routes import authbp
     from .groups.routes import groupsbp
-    from .goals.routes import goalsbp
+    #from .goals.routes import goalsbp
     from .Flashcard.routes import flashcards_bp
     from .timetable.routes import timetable_bp
     
     app.register_blueprint(authbp)
     app.register_blueprint(groupsbp)
-    app.register_blueprint(goalsbp)
+    #app.register_blueprint(goalsbp)
     app.register_blueprint(flashcards_bp)
     app.register_blueprint(timetable_bp)
 
@@ -66,6 +66,7 @@ def create_app(config_name=None):
         create_database(app)
         with app.app_context():
             drop_temporary_table()
+            
           
            
 
@@ -97,28 +98,7 @@ def drop_temporary_table():
             print("The _alembic_tmp_flashcard table does not exist.")
 
 
-def notify_upcoming_deadlines():
-    from .goals.models import Goal  # Import Goal model to avoid circular import issues
-    
-    now = datetime.utcnow()
-    upcoming_deadline = now + timedelta(hours=24)
-    
-    try:
-        goals = Goal.query.filter(Goal.deadline <= upcoming_deadline, Goal.is_completed == False).all()
 
-        for goal in goals:
-            user_id = goal.user_id
-            skt.emit('notification', {
-                'message': f"Upcoming deadline for goal: {goal.title}",
-                'goal_id': goal.id,
-                'deadline': goal.deadline.strftime('%Y-%m-%d %H:%M:%S')
-            }, room=user_id)
-    except Exception as e:
-        print(f"Error notifying upcoming deadlines: {e}")
-
-# Schedule the job
-scheduler.add_job(notify_upcoming_deadlines, 'interval', hours=1)
-scheduler.start()
 
 
 @skt.on('some_event')
