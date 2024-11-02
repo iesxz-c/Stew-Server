@@ -52,7 +52,7 @@ def create_app(config_name=None):
     from .auth.routes import authbp
     from .groups.routes import groupsbp
     from .goals.routes import goalsbp
-    from .flashcards.routes import flashcards_bp
+    from .Flashcard.routes import flashcards_bp
     from .timetable.routes import timetable_bp
     
     app.register_blueprint(authbp)
@@ -66,6 +66,7 @@ def create_app(config_name=None):
         create_database(app)
         with app.app_context():
             drop_temporary_table()
+          
            
 
     # Route for serving uploaded files
@@ -135,6 +136,7 @@ def create_database(app):
         with app.app_context():
             db.create_all()
             print('Database created!')
+
 
 
 
