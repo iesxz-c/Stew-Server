@@ -10,6 +10,4 @@ class User(db.Model):
 
     # Use string reference for Group to avoid circular import
     groups = db.relationship('Group', secondary='group_member')
-    goals = db.relationship('Goal', backref='user', lazy=True)
-    notifications = db.relationship('Notification', backref='user', lazy=True)
-    progress = db.relationship('UserProgress', backref='user', uselist=False)
+    

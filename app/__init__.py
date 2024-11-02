@@ -54,12 +54,14 @@ def create_app(config_name=None):
     #from .goals.routes import goalsbp
     from .Flashcard.routes import flashcards_bp
     from .timetable.routes import timetable_bp
+    from .Task.routes import taskbp
     
     app.register_blueprint(authbp)
     app.register_blueprint(groupsbp)
     #app.register_blueprint(goalsbp)
     app.register_blueprint(flashcards_bp)
     app.register_blueprint(timetable_bp)
+    app.register_blueprint(taskbp)
 
     # Ensure database is created
     if config_name != 'testing':
