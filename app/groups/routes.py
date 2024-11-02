@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity, decode_token
 from .. import db, skt
 from ..auth.models import User
-from .models import Group, Message
+from .models import Group, Message,GroupMember
 from flask_socketio import join_room, leave_room, send
 from flask_jwt_extended.exceptions import NoAuthorizationError,InvalidHeaderError
 
@@ -59,7 +59,11 @@ def delete_group(group_id):
 
     if group.owner_id != user_id:
         return jsonify({"error": "Only the owner can delete this group"}), 403
+    
+    Message.query.filter_by(group_id=group.id).delete()
 
+    # Delete associated members
+    GroupMember.query.filter_by(group_id=group.id).delete()
     db.session.delete(group)
     db.session.commit()
     return jsonify({"message": "Group deleted"}), 200
