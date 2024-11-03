@@ -145,7 +145,7 @@ To set up the Stew backend, follow these steps:
 1. **Clone the Repository**:
    Open your terminal and run the following command to clone the repository:
    ```bash
-   git clone https://github.com/iesxz-c/Stew.git
+   git clone https://github.com/iesxz-c/Stew-Server.git
    ```
 
 2. **Navigate to the Backend Directory**:
@@ -188,7 +188,7 @@ We welcome contributions to the Stew backend! If you'd like to contribute, pleas
    
 2. **Clone Your Fork**: Clone your forked repository to your local machine:
    ```bash
-   git clone https://github.com/your-username/Stew.git
+   git clone https://github.com/your-username/Stew-Server.git
    ```
 
 3. **Create a New Branch**: Always create a new branch for your feature or bug fix:
