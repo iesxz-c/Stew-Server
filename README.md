@@ -122,12 +122,19 @@ Responses are typically returned in JSON format, with appropriate HTTP status co
 The following are the key dependencies used in the Stew backend application:
 
 **Flask**: Core web framework for building the backend API.
+
 **Flask-JWT-Extended**: Adds JWT (JSON Web Token) authentication for securing API endpoints.
+
 **Flask-SocketIO**: Enables real-time, bi-directional communication for features like group chat.
+
 **Flask-SQLAlchemy**: ORM for database interactions, making it easier to manage data models.
+
 **Flask-Migrate**: Handles database migrations and schema changes with Alembic.
+
 **SQLAlchemy**: Core SQL toolkit and ORM for database management.
+
 **APScheduler**: Adds scheduling capabilities, useful for tasks like sending reminders or notifications.
+
 **google-generativeai**: Enables integration with Google’s generative AI for features like AI-assisted doubt solving.
 
 
