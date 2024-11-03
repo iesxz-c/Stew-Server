@@ -89,6 +89,16 @@ http://localhost:5000
 - `POST /ask`: Ask a question and receive an answer
 - `GET /history`: Retrieve the history of questions and answers
 
+### Real-Time Group Chat
+
+The Flask server runs with Socket.IO support to manage live chat events. When a user sends a message, the server emits it to all connected clients in the same group room, ensuring everyone receives the message simultaneously. Key functions include:
+
+- **User authentication**: JWT tokens are validated before users can join chat rooms.
+- **Message broadcasting**: Messages are broadcasted within each group chat room.
+- **Room management**: Users are added to or removed from rooms dynamically based on their activity.
+
+This setup ensures that all users within a group chat experience seamless, real-time communication.
+
 ### Response Format
 Responses are typically returned in JSON format, with appropriate HTTP status codes.
 
