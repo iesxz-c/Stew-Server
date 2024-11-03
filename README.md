@@ -8,6 +8,7 @@ The backend for the Stew collaborative study application is built using Flask. T
 - [Features](#features)
 - [Technologies Used](#technologies-used)
 - [API Documentation](#api-documentation)
+- [Database](#database)
 - [Installation](#installation)
 - [Usage](#usage)
 - [Contributing](#contributing)
@@ -99,8 +100,36 @@ The Flask server runs with Socket.IO support to manage live chat events. When a 
 
 This setup ensures that all users within a group chat experience seamless, real-time communication.
 
+## Database
+
+### Database Management with SQLAlchemy
+
+**SQLAlchemy** is used in Stew as an ORM (Object Relational Mapper) to interact with the database in a more Pythonic way, abstracting away complex SQL queries. It allows us to define database models as Python classes, which makes it easier to read and maintain our code. Each model represents a table in the database, with class attributes corresponding to columns. For instance, in Stew, models like `Task`, `User`, and `Doubt` define various fields like `title`, `description`, and `completed`, along with relationships between models. With SQLAlchemy, we can handle all CRUD operations—Create, Read, Update, Delete—on these models effortlessly, using Python.
+
+### Database Version Control with Flask-Migrate
+
+**Flask-Migrate** provides version control for database migrations by leveraging **Alembic**, a database migration tool for SQLAlchemy. As Stew evolves, its database schema might need updates, like adding new tables or modifying existing columns. Flask-Migrate helps us manage these schema changes smoothly without losing data. When we modify our model classes, we can use Flask-Migrate to generate migration scripts. These scripts record the necessary SQL commands to update the database schema, allowing us to:
+
+- **Upgrade**: Apply the latest changes to the database.
+- **Downgrade**: Revert to an earlier database schema version, if needed.
+
+Using Flask-Migrate ensures that the database schema stays synchronized with the application’s codebase, making it easier to track and apply changes across different environments, like development, staging, and production.
+
 ### Response Format
 Responses are typically returned in JSON format, with appropriate HTTP status codes.
+
+### Requirements
+The following are the key dependencies used in the Stew backend application:
+
+**Flask**: Core web framework for building the backend API.
+**Flask-JWT-Extended**: Adds JWT (JSON Web Token) authentication for securing API endpoints.
+**Flask-SocketIO**: Enables real-time, bi-directional communication for features like group chat.
+**Flask-SQLAlchemy**: ORM for database interactions, making it easier to manage data models.
+**Flask-Migrate**: Handles database migrations and schema changes with Alembic.
+**SQLAlchemy**: Core SQL toolkit and ORM for database management.
+**APScheduler**: Adds scheduling capabilities, useful for tasks like sending reminders or notifications.
+**google-generativeai**: Enables integration with Google’s generative AI for features like AI-assisted doubt solving.
+
 
 ## Installation
 
