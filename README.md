@@ -92,15 +92,7 @@ http://localhost:5000
 
 ### Real-Time Group Chat
 
-The Flask server runs with Socket.IO support to manage live chat events. When a user sends a message, the server emits it to all connected clients in the same group room, ensuring everyone receives the message simultaneously. Key functions include:
-
-- **User authentication**: JWT tokens are validated before users can join chat rooms.
-- **Message broadcasting**: Messages are broadcasted within each group chat room.
-- **Room management**: Users are added to or removed from rooms dynamically based on their activity.
-
-This setup ensures that all users within a group chat experience seamless, real-time communication.
-
-## Database
+The Flask server runs with Socket.IO support to manage live chat events. 
 
 ### Database Management with SQLAlchemy
 
@@ -109,33 +101,6 @@ This setup ensures that all users within a group chat experience seamless, real-
 ### Database Version Control with Flask-Migrate
 
 **Flask-Migrate** provides version control for database migrations by leveraging **Alembic**, a database migration tool for SQLAlchemy. As Stew evolves, its database schema might need updates, like adding new tables or modifying existing columns. Flask-Migrate helps us manage these schema changes smoothly without losing data. When we modify our model classes, we can use Flask-Migrate to generate migration scripts. These scripts record the necessary SQL commands to update the database schema, allowing us to:
-
-- **Upgrade**: Apply the latest changes to the database.
-- **Downgrade**: Revert to an earlier database schema version, if needed.
-
-Using Flask-Migrate ensures that the database schema stays synchronized with the application’s codebase, making it easier to track and apply changes across different environments, like development, staging, and production.
-
-### Response Format
-Responses are typically returned in JSON format, with appropriate HTTP status codes.
-
-### Requirements
-The following are the key dependencies used in the Stew backend application:
-
-**Flask**: Core web framework for building the backend API.
-
-**Flask-JWT-Extended**: Adds JWT (JSON Web Token) authentication for securing API endpoints.
-
-**Flask-SocketIO**: Enables real-time, bi-directional communication for features like group chat.
-
-**Flask-SQLAlchemy**: ORM for database interactions, making it easier to manage data models.
-
-**Flask-Migrate**: Handles database migrations and schema changes with Alembic.
-
-**SQLAlchemy**: Core SQL toolkit and ORM for database management.
-
-**APScheduler**: Adds scheduling capabilities, useful for tasks like sending reminders or notifications.
-
-**google-generativeai**: Enables integration with Google’s generative AI for features like AI-assisted doubt solving.
 
 
 ## Installation
@@ -176,46 +141,5 @@ To set up the Stew backend, follow these steps:
 6. **Open Your Browser**:
    The API will be accessible at `http://localhost:5000`.
 
-## Usage
-
-Once the backend is running, you can interact with the API using tools like Postman or cURL. Make sure to follow the API documentation for the correct endpoints and payloads.
-
-## Contributing
-
-We welcome contributions to the Stew backend! If you'd like to contribute, please follow these steps:
-
-1. **Fork the Repository**: Click the "Fork" button in the top right corner of the repository page.
-   
-2. **Clone Your Fork**: Clone your forked repository to your local machine:
-   ```bash
-   git clone https://github.com/your-username/Stew-Server.git
-   ```
-
-3. **Create a New Branch**: Always create a new branch for your feature or bug fix:
-   ```bash
-   git checkout -b feature-name
-   ```
-
-4. **Make Changes**: Implement your changes and commit them with a descriptive message:
-   ```bash
-   git commit -m "Description of the changes made"
-   ```
-
-5. **Push Changes**: Push your branch to your forked repository:
-   ```bash
-   git push origin feature-name
-   ```
-
-6. **Create a Pull Request**: Go to the original repository and click on the "Pull Requests" tab to submit your changes.
-
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more information.
-
-## Frontend Link
 
 For the frontend of the Stew application, visit: [Stew Client](https://github.com/iesxz-c/Stew-Client)
-
----
-
-Thank you for checking out the Stew backend! We hope it provides a solid foundation for your collaborative study needs. If you have any questions or feedback, feel free to reach out.
