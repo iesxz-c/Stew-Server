@@ -53,16 +53,12 @@ http://localhost:5000
 - `POST /ask`: Ask a question and receive an answer
 - `GET /history`: Retrieve the history of questions and answers
 
-### **Flashcards Endpoints**
-
-| Method | Endpoint                          | Description                   | Auth Required |
-|--------|-----------------------------------|-------------------------------|---------------|
-| POST   | `/flashcards/create`              | Create a new flashcard        | ✅             |
-| DELETE | `/flashcards/delete/<id>`         | Delete a specific flashcard   | ✅             |
-| GET    | `/flashcards/search?title=<query>`| Search flashcards by title    | ✅             |
-| GET    | `/flashcards`                     | Get all user's flashcards     | ✅             |
-| PUT    | `/flashcards/edit/<id>`           | Edit an existing flashcard    | ✅             |
-
+#### Flashcards Endpoints
+- `POST /flashcards`: Create a new flashcard
+- `GET /flashcards`: Retrieve all flashcards for the current user
+- `POST /flashcards/<int:flashcard_id>/learn`: Mark a flashcard as
+learned
+- `DELETE /flashcards/<int:flashcard_id>`: Delete a flashcard
 ---
 
 ## Installation
