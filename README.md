@@ -53,6 +53,18 @@ http://localhost:5000
 - `POST /ask`: Ask a question and receive an answer
 - `GET /history`: Retrieve the history of questions and answers
 
+### **Flashcards Endpoints**
+
+| Method | Endpoint                          | Description                   | Auth Required |
+|--------|-----------------------------------|-------------------------------|---------------|
+| POST   | `/flashcards/create`              | Create a new flashcard        | ✅             |
+| DELETE | `/flashcards/delete/<id>`         | Delete a specific flashcard   | ✅             |
+| GET    | `/flashcards/search?title=<query>`| Search flashcards by title    | ✅             |
+| GET    | `/flashcards`                     | Get all user's flashcards     | ✅             |
+| PUT    | `/flashcards/edit/<id>`           | Edit an existing flashcard    | ✅             |
+
+---
+
 ## Installation
 
 To set up the Stew backend, follow these steps:
