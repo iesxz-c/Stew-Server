@@ -83,7 +83,26 @@ def create_app(config_name=None):
             abort(404)
         print(f"Serving file from: {file_path}")
         return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+    
+    @app.route('/uploads/group/<int:group_id>/<filename>')
+    def serve_group_file(group_id, filename):
+           group_folder = os.path.join(app.config['UPLOAD_FOLDER'], f"group_{group_id}")
+           file_path = os.path.join(group_folder, filename)
 
+           if not os.path.exists(file_path):
+                  print(f"File {filename} not found in {group_folder}")
+                  abort(404)
+
+           return send_from_directory(group_folder, filename)
+
+    @app.route('/uploads/group_<int:group_id>/<filename>')
+    def uploaded_files(group_id, filename):
+      group_folder = os.path.join(app.config['UPLOAD_FOLDER'], f"group_{group_id}")
+      if not os.path.exists(os.path.join(group_folder, filename)):
+        abort(404)
+      return send_from_directory(group_folder, filename)
+
+    
     return app
 
 

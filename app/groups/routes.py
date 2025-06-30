@@ -1,6 +1,8 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify,current_app
+from werkzeug.utils import secure_filename
 from flask_jwt_extended import jwt_required, get_jwt_identity, decode_token
-from .. import db, skt
+from .. import db, skt,allowed_file,UPLOAD_FOLDER
+import os
 from ..auth.models import User
 from .models import Group, Message,GroupMember
 from flask_socketio import join_room, leave_room, send
@@ -122,3 +124,41 @@ def on_leave(data):
         send({"type":"notification","content": f"{username} went offline."}, to=group_id)
     except NoAuthorizationError as e:
         send(str(e), to=request.sid)
+
+@groupsbp.route('/upload/<int:group_id>', methods=['POST'])
+@jwt_required()
+def upload_file(group_id):
+    user_id = get_jwt_identity()
+
+    if 'file' not in request.files:
+        return jsonify({"error": "No file part"}), 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+
+    if allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        group_folder = os.path.join(current_app.config['UPLOAD_FOLDER'], f"group_{group_id}")
+        os.makedirs(group_folder, exist_ok=True)  # ✅ Create per-group folder if not exist
+
+        file_path = os.path.join(group_folder, filename)
+        file.save(file_path)
+
+        return jsonify({
+            "message": "File uploaded",
+            "file_url": f"/uploads/group/{group_id}/{filename}"
+        }), 201
+
+    return jsonify({"error": "File type not allowed"}), 400
+
+@groupsbp.route('/group_files/<int:group_id>', methods=['GET'])
+@jwt_required()
+def list_group_files(group_id):
+    group_folder = os.path.join(current_app.config['UPLOAD_FOLDER'], f"group_{group_id}")
+    if not os.path.exists(group_folder):
+        return jsonify([])
+
+    files = os.listdir(group_folder)
+    file_urls = [f"/uploads/group_{group_id}/{f}" for f in files]
+    return jsonify(file_urls) 
